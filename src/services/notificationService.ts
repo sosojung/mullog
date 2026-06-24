@@ -1,25 +1,34 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// 에뮬레이터/구형 기기에서 모듈 초기화 실패 방지
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+} catch (_) {}
 
 export async function requestPermission(): Promise<boolean> {
   if (Platform.OS === 'web') return false;
-  const { status } = await Notifications.requestPermissionsAsync();
-  return status === 'granted';
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    return status === 'granted';
+  } catch {
+    return false;
+  }
 }
 
 export async function cancelAllReminders(): Promise<void> {
   if (Platform.OS === 'web') return;
-  await Notifications.cancelAllScheduledNotificationsAsync();
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  } catch (_) {}
 }
 
 export async function scheduleWaterReminders(intervalHours: number): Promise<void> {
