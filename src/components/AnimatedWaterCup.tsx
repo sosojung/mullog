@@ -21,19 +21,18 @@ const WAVE_AMP = 6;
 
 function buildWavePath(offset: number, yPos: number, width: number, height: number): string {
   const w = width;
-  const step = w / 2;
-  const x0 = -w + offset * w * 2;
+  // offset 0~1을 -amp~+amp 범위의 위상 이동으로만 사용 (컵 전체를 항상 채움)
+  const shift = (offset - 0.5) * w * 0.6;
 
-  let d = `M ${x0} ${yPos}`;
-  for (let x = x0; x < w * 2; x += step) {
-    const cp1x = x + step / 4;
-    const cp1y = yPos - WAVE_AMP;
-    const cp2x = x + (step * 3) / 4;
-    const cp2y = yPos + WAVE_AMP;
-    const ex = x + step;
-    d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${ex} ${yPos}`;
+  let d = `M 0 ${yPos + Math.sin(shift / w * Math.PI * 2) * WAVE_AMP}`;
+  const segments = 8;
+  for (let i = 1; i <= segments; i++) {
+    const x = (w / segments) * i;
+    const phase = (x + shift) / w * Math.PI * 2;
+    const y = yPos + Math.sin(phase) * WAVE_AMP;
+    d += ` L ${x} ${y}`;
   }
-  d += ` L ${w * 2} ${height} L ${x0} ${height} Z`;
+  d += ` L ${w} ${height} L 0 ${height} Z`;
   return d;
 }
 
@@ -61,9 +60,9 @@ export function AnimatedWaterCup({ percent, current, goal }: Props) {
 
   useEffect(() => {
     waveOffset.value = withRepeat(
-      withTiming(1, { duration: 2200, easing: Easing.linear }),
+      withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.sin) }),
       -1,
-      false
+      true
     );
   }, []);
 
