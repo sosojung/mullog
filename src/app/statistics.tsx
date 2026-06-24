@@ -19,6 +19,8 @@ export default function StatisticsScreen() {
   const average = filledDays > 0
     ? Math.round(last7Days.reduce((sum, d) => sum + d.total, 0) / filledDays)
     : 0;
+  const maxDay = Math.max(...last7Days.map(d => d.total), 0);
+  const goalDays = last7Days.filter(d => d.total >= dailyGoal).length;
 
   const chartLabels = last7Days.map(d => {
     const [, month, day] = d.date.split('-');
@@ -41,6 +43,16 @@ export default function StatisticsScreen() {
           <View style={[styles.card, { backgroundColor: colors.backgroundElement }]}>
             <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>7일 평균</Text>
             <Text style={[styles.cardValue, { color: colors.text }]}>{average}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>ml</Text></Text>
+          </View>
+        </View>
+        <View style={styles.cards}>
+          <View style={[styles.card, { backgroundColor: colors.backgroundElement }]}>
+            <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>최고 섭취량</Text>
+            <Text style={[styles.cardValue, { color: colors.text }]}>{maxDay}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>ml</Text></Text>
+          </View>
+          <View style={[styles.card, { backgroundColor: colors.backgroundElement }]}>
+            <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>목표 달성일</Text>
+            <Text style={[styles.cardValue, { color: '#34C759' }]}>{goalDays}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>일 / 7일</Text></Text>
           </View>
         </View>
 

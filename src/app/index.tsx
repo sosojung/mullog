@@ -15,13 +15,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/use-theme';
 import { Spacing, BottomTabInset } from '../constants/theme';
 import { useWaterStore } from '../store/waterStore';
-import { getTodayTotal, getProgressPercent } from '../utils/calculateProgress';
+import { getTodayTotal, getProgressPercent, getStreak } from '../utils/calculateProgress';
 import { WaterButton } from '../components/WaterButton';
 import { AnimatedWaterCup } from '../components/AnimatedWaterCup';
 
+function getTodayLabel(): string {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  const weekday = weekdays[now.getDay()];
+  return `${month}월 ${day}일 ${weekday}요일`;
+}
+
 export default function HomeScreen() {
   const colors = useTheme();
-  const { records, dailyGoal, addWater, setGoal } = useWaterStore();
+  const { records, dailyGoal, addWater, setGoal, deleteRecord } = useWaterStore();
 
   const [customModalVisible, setCustomModalVisible] = useState(false);
   const [goalModalVisible, setGoalModalVisible] = useState(false);
@@ -30,6 +39,7 @@ export default function HomeScreen() {
 
   const todayTotal = getTodayTotal(records);
   const percent = getProgressPercent(todayTotal, dailyGoal);
+  const streak = getStreak(records, dailyGoal);
 
   const todayRecords = [...records]
     .filter(r => new Date(r.timestamp).toDateString() === new Date().toDateString())
@@ -57,16 +67,34 @@ export default function HomeScreen() {
     setGoalModalVisible(false);
   }
 
+  function confirmDelete(id: string) {
+    Alert.alert('기록 삭제', '이 기록을 삭제할까요?', [
+      { text: '취소', style: 'cancel' },
+      { text: '삭제', style: 'destructive', onPress: () => deleteRecord(id) },
+    ]);
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
+        {/* 헤더 */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: colors.text }]}>물로그</Text>
-          <Pressable onPress={() => { setGoalInput(String(dailyGoal)); setGoalModalVisible(true); }}>
-            <Text style={[styles.goalChip, { color: colors.textSecondary, backgroundColor: colors.backgroundElement }]}>
-              목표 {dailyGoal}ml
-            </Text>
-          </Pressable>
+          <View>
+            <Text style={[styles.dateLabel, { color: colors.textSecondary }]}>{getTodayLabel()}</Text>
+            <Text style={[styles.title, { color: colors.text }]}>물로그</Text>
+          </View>
+          <View style={styles.headerRight}>
+            {streak > 0 && (
+              <View style={[styles.streakBadge, { backgroundColor: colors.backgroundElement }]}>
+                <Text style={styles.streakText}>🔥 {streak}일</Text>
+              </View>
+            )}
+            <Pressable onPress={() => { setGoalInput(String(dailyGoal)); setGoalModalVisible(true); }}>
+              <Text style={[styles.goalChip, { color: colors.textSecondary, backgroundColor: colors.backgroundElement }]}>
+                목표 {dailyGoal}ml
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* 물컵 애니메이션 */}
@@ -76,9 +104,9 @@ export default function HomeScreen() {
 
         {/* 버튼 */}
         <View style={styles.buttons}>
-          <WaterButton label="+200ml" onPress={() => addWater(200)} />
-          <WaterButton label="+300ml" onPress={() => addWater(300)} />
-          <WaterButton label="직접 입력" onPress={() => setCustomModalVisible(true)} />
+          <WaterButton label="+200ml" emoji="💧" variant="primary" onPress={() => addWater(200)} />
+          <WaterButton label="+300ml" emoji="💧" variant="primary" onPress={() => addWater(300)} />
+          <WaterButton label="직접 입력" emoji="✏️" onPress={() => setCustomModalVisible(true)} />
         </View>
 
         {/* 오늘 기록 */}
@@ -88,9 +116,18 @@ export default function HomeScreen() {
             {todayRecords.map(r => (
               <View key={r.id} style={[styles.historyItem, { backgroundColor: colors.backgroundElement }]}>
                 <Text style={[styles.historyAmount, { color: colors.text }]}>{r.amount}ml</Text>
-                <Text style={[styles.historyTime, { color: colors.textSecondary }]}>
-                  {new Date(r.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                </Text>
+                <View style={styles.historyRight}>
+                  <Text style={[styles.historyTime, { color: colors.textSecondary }]}>
+                    {new Date(r.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                  <Pressable
+                    onPress={() => confirmDelete(r.id)}
+                    hitSlop={8}
+                    style={styles.deleteBtn}
+                  >
+                    <Text style={[styles.deleteText, { color: colors.textSecondary }]}>×</Text>
+                  </Pressable>
+                </View>
               </View>
             ))}
           </View>
@@ -137,6 +174,22 @@ export default function HomeScreen() {
               onChangeText={setGoalInput}
               autoFocus
             />
+            <View style={styles.presets}>
+              {[1500, 2000, 2500].map(v => (
+                <Pressable
+                  key={v}
+                  style={[
+                    styles.presetBtn,
+                    { backgroundColor: goalInput === String(v) ? '#007AFF' : colors.backgroundSelected },
+                  ]}
+                  onPress={() => setGoalInput(String(v))}
+                >
+                  <Text style={{ color: goalInput === String(v) ? '#fff' : colors.textSecondary, fontSize: 13 }}>
+                    {v}ml
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
             <View style={styles.modalButtons}>
               <Pressable style={[styles.modalBtn, { backgroundColor: colors.backgroundSelected }]} onPress={() => { setGoalInput(''); setGoalModalVisible(false); }}>
                 <Text style={{ color: colors.text }}>취소</Text>
@@ -158,10 +211,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: Spacing.four,
   },
+  dateLabel: { fontSize: 13, marginBottom: 2 },
   title: { fontSize: 28, fontWeight: '700' },
+  headerRight: { alignItems: 'flex-end', gap: Spacing.one },
+  streakBadge: {
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  streakText: { fontSize: 13, fontWeight: '600' },
   goalChip: {
     fontSize: 13,
     paddingHorizontal: Spacing.two,
@@ -184,7 +245,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   historyAmount: { fontSize: 15, fontWeight: '600' },
+  historyRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   historyTime: { fontSize: 13 },
+  deleteBtn: { padding: 4 },
+  deleteText: { fontSize: 18, fontWeight: '300', lineHeight: 20 },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -203,6 +267,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: Spacing.two,
     fontSize: 16,
+  },
+  presets: { flexDirection: 'row', gap: Spacing.two },
+  presetBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: Spacing.one,
+    borderRadius: 8,
   },
   modalButtons: { flexDirection: 'row', gap: Spacing.two },
   modalBtn: {
