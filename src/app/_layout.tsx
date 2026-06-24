@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, View, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
@@ -32,27 +32,31 @@ export default function TabLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+      <View style={StyleSheet.absoluteFillObject}>
+        <AppTabs />
 
-      {/* 온보딩: 홈 화면 위에 풀스크린으로 덮기 */}
-      {!isOnboarded && showOnboarding && (
-        <OnboardingScreen
-          onStart={async () => {
-            setShowOnboarding(false);
-            setShowTutorial(true);
+        {/* 온보딩: 홈 화면 위에 풀스크린으로 덮기 */}
+        {!isOnboarded && showOnboarding && (
+          <View style={StyleSheet.absoluteFillObject}>
+            <OnboardingScreen
+              onStart={async () => {
+                setShowOnboarding(false);
+                setShowTutorial(true);
+              }}
+            />
+          </View>
+        )}
+
+        {/* 튜토리얼: 홈 화면이 뒤에 보이는 상태로 오버레이 */}
+        <TutorialOverlay
+          visible={showTutorial}
+          onComplete={async () => {
+            setShowTutorial(false);
+            await completeOnboarding();
           }}
         />
-      )}
-
-      {/* 튜토리얼: 홈 화면이 뒤에 보이는 상태로 오버레이 */}
-      <TutorialOverlay
-        visible={showTutorial}
-        onComplete={async () => {
-          setShowTutorial(false);
-          await completeOnboarding();
-        }}
-      />
+      </View>
+      <AnimatedSplashOverlay />
     </ThemeProvider>
   );
 }
