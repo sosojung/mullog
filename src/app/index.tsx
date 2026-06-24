@@ -17,7 +17,7 @@ import { Spacing, BottomTabInset } from '../constants/theme';
 import { useWaterStore } from '../store/waterStore';
 import { getTodayTotal, getProgressPercent } from '../utils/calculateProgress';
 import { WaterButton } from '../components/WaterButton';
-import { ProgressBar } from '../components/ProgressBar';
+import { AnimatedWaterCup } from '../components/AnimatedWaterCup';
 
 export default function HomeScreen() {
   const colors = useTheme();
@@ -30,7 +30,6 @@ export default function HomeScreen() {
 
   const todayTotal = getTodayTotal(records);
   const percent = getProgressPercent(todayTotal, dailyGoal);
-  const remaining = Math.max(0, dailyGoal - todayTotal);
 
   const todayRecords = [...records]
     .filter(r => new Date(r.timestamp).toDateString() === new Date().toDateString())
@@ -70,29 +69,19 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.amountBox}>
-          <Text style={[styles.amountValue, { color: colors.text }]}>{todayTotal}</Text>
-          <Text style={[styles.amountUnit, { color: colors.textSecondary }]}>ml</Text>
+        {/* 물컵 애니메이션 */}
+        <View style={styles.cupSection}>
+          <AnimatedWaterCup percent={percent} current={todayTotal} goal={dailyGoal} />
         </View>
 
-        {percent >= 100 ? (
-          <Text style={[styles.statusText, { color: '#34C759' }]}>목표 달성!</Text>
-        ) : (
-          <Text style={[styles.statusText, { color: colors.textSecondary }]}>
-            {remaining}ml 더 마시면 목표 달성
-          </Text>
-        )}
-
-        <View style={styles.progressSection}>
-          <ProgressBar percent={percent} current={todayTotal} goal={dailyGoal} />
-        </View>
-
+        {/* 버튼 */}
         <View style={styles.buttons}>
           <WaterButton label="+200ml" onPress={() => addWater(200)} />
           <WaterButton label="+300ml" onPress={() => addWater(300)} />
           <WaterButton label="직접 입력" onPress={() => setCustomModalVisible(true)} />
         </View>
 
+        {/* 오늘 기록 */}
         {todayRecords.length > 0 && (
           <View style={styles.historySection}>
             <Text style={[styles.historyTitle, { color: colors.textSecondary }]}>오늘 기록</Text>
@@ -179,16 +168,10 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
     borderRadius: 8,
   },
-  amountBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    marginBottom: Spacing.two,
+  cupSection: {
+    alignItems: 'center',
+    marginBottom: Spacing.five,
   },
-  amountValue: { fontSize: 72, fontWeight: '700', lineHeight: 80 },
-  amountUnit: { fontSize: 24, marginBottom: 10, marginLeft: 4 },
-  statusText: { textAlign: 'center', fontSize: 14, marginBottom: Spacing.three },
-  progressSection: { marginBottom: Spacing.four },
   buttons: { flexDirection: 'row', marginBottom: Spacing.five },
   historySection: { gap: Spacing.two },
   historyTitle: { fontSize: 13, fontWeight: '600', marginBottom: Spacing.one },
