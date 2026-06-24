@@ -1,27 +1,32 @@
-import { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Path, Defs, ClipPath, Rect, G } from 'react-native-svg';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import Svg, { Path, Defs, ClipPath, G, Circle } from 'react-native-svg';
 import Animated, {
   useSharedValue,
   useAnimatedProps,
   withTiming,
   withRepeat,
+  withSequence,
   Easing,
   useDerivedValue,
-  interpolateColor,
 } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../hooks/use-theme';
 import { Spacing } from '../constants/theme';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const CUP_WIDTH = 160;
 const CUP_HEIGHT = 200;
 const WAVE_AMP = 6;
 
+const PARTICLE_COUNT = 7;
+const PARTICLE_ANGLES = [-60, -35, -10, 15, 40, 65, 90];
+const PARTICLE_COLORS = ['#007AFF', '#34C759', '#5AC8FA', '#4CD964', '#007AFF', '#34C759', '#5AC8FA'];
+
 function buildWavePath(offset: number, yPos: number, width: number, height: number): string {
   const w = width;
-  // offset 0~1을 -amp~+amp 범위의 위상 이동으로만 사용 (컵 전체를 항상 채움)
   const shift = (offset - 0.5) * w * 0.6;
 
   let d = `M 0 ${yPos + Math.sin(shift / w * Math.PI * 2) * WAVE_AMP}`;
@@ -44,10 +49,41 @@ type Props = {
 
 export function AnimatedWaterCup({ percent, current, goal }: Props) {
   const colors = useTheme();
+  const prevGoalMet = useRef(false);
+
+  // 색상: React state로 관리 (웹/네이티브 모두 동작)
+  const [waterColor, setWaterColor] = useState('#007AFF');
+  const [bgColor, setBgColor] = useState('rgba(0,122,255,0.12)');
+
+  // 파티클 sharedValues
+  const particleY = Array.from({ length: PARTICLE_COUNT }, () => useSharedValue(0));
+  const particleOpacity = Array.from({ length: PARTICLE_COUNT }, () => useSharedValue(0));
+  const particleX = Array.from({ length: PARTICLE_COUNT }, () => useSharedValue(0));
 
   const waterLevel = useSharedValue(0);
   const waveOffset = useSharedValue(0);
-  const colorProgress = useSharedValue(0);
+
+  function triggerParticles() {
+    PARTICLE_ANGLES.forEach((angle, i) => {
+      const rad = (angle * Math.PI) / 180;
+      const targetX = Math.sin(rad) * 55;
+      const targetY = -Math.cos(rad) * 55;
+
+      particleX[i].value = CUP_WIDTH / 2;
+      particleY[i].value = 10;
+      particleOpacity[i].value = 1;
+
+      particleX[i].value = withTiming(CUP_WIDTH / 2 + targetX, { duration: 600, easing: Easing.out(Easing.cubic) });
+      particleY[i].value = withSequence(
+        withTiming(10 + targetY, { duration: 500, easing: Easing.out(Easing.cubic) }),
+        withTiming(10 + targetY + 20, { duration: 300, easing: Easing.in(Easing.cubic) })
+      );
+      particleOpacity[i].value = withSequence(
+        withTiming(1, { duration: 100 }),
+        withTiming(0, { duration: 600 })
+      );
+    });
+  }
 
   useEffect(() => {
     const targetLevel = Math.min(percent, 100) / 100;
@@ -55,7 +91,26 @@ export function AnimatedWaterCup({ percent, current, goal }: Props) {
       duration: 700,
       easing: Easing.out(Easing.cubic),
     });
-    colorProgress.value = withTiming(percent >= 100 ? 1 : 0, { duration: 600 });
+
+    const goalMet = percent >= 100;
+
+    // 색상 전환
+    if (goalMet) {
+      setWaterColor('#34C759');
+      setBgColor('rgba(52,199,89,0.12)');
+    } else {
+      setWaterColor('#007AFF');
+      setBgColor('rgba(0,122,255,0.12)');
+    }
+
+    // 처음 달성하는 순간에만 이펙트 실행
+    if (goalMet && !prevGoalMet.current) {
+      triggerParticles();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    }
+    prevGoalMet.current = goalMet;
   }, [percent]);
 
   useEffect(() => {
@@ -66,31 +121,15 @@ export function AnimatedWaterCup({ percent, current, goal }: Props) {
     );
   }, []);
 
-  // 0%일 때 물이 컵 아래로 완전히 숨도록 여유 추가
   const waterY = useDerivedValue(() =>
     CUP_HEIGHT + WAVE_AMP * 2 - waterLevel.value * (CUP_HEIGHT + WAVE_AMP * 2)
   );
 
   const animatedWaterProps = useAnimatedProps(() => {
     const d = buildWavePath(waveOffset.value, waterY.value, CUP_WIDTH, CUP_HEIGHT);
-    const fill = interpolateColor(
-      colorProgress.value,
-      [0, 1],
-      ['#007AFF', '#34C759']
-    );
-    return { d, fill };
+    return { d };
   });
 
-  const animatedFillProps = useAnimatedProps(() => {
-    const fill = interpolateColor(
-      colorProgress.value,
-      [0, 1],
-      ['rgba(0,122,255,0.15)', 'rgba(52,199,89,0.15)']
-    );
-    return { fill };
-  });
-
-  // 컵 모양 path (둥근 바닥)
   const cupPath = `
     M 10 0
     L ${CUP_WIDTH - 10} 0
@@ -99,26 +138,54 @@ export function AnimatedWaterCup({ percent, current, goal }: Props) {
     Z
   `;
 
+  const SVG_HEIGHT = CUP_HEIGHT + 80; // 파티클이 위로 올라갈 공간
+  const CUP_Y_OFFSET = 70;           // 파티클 공간만큼 컵을 아래로
+
   const clipId = 'cupClip';
 
   return (
     <View style={styles.container}>
-      <Svg width={CUP_WIDTH} height={CUP_HEIGHT + 20}>
+      <Svg width={CUP_WIDTH} height={SVG_HEIGHT}>
         <Defs>
           <ClipPath id={clipId}>
-            <Path d={cupPath} />
+            <Path
+              d={cupPath}
+              transform={`translate(0, ${CUP_Y_OFFSET})`}
+            />
           </ClipPath>
         </Defs>
 
+        {/* 파티클 */}
+        {particleY.map((py, i) => {
+          const animatedCircleProps = useAnimatedProps(() => ({
+            cy: py.value + CUP_Y_OFFSET,
+            cx: particleX[i].value,
+            opacity: particleOpacity[i].value,
+          }));
+          return (
+            <AnimatedCircle
+              key={i}
+              r={4}
+              fill={PARTICLE_COLORS[i]}
+              animatedProps={animatedCircleProps}
+            />
+          );
+        })}
+
         {/* 컵 내부 배경 */}
-        <AnimatedPath
+        <Path
           d={cupPath}
-          animatedProps={animatedFillProps}
+          fill={bgColor}
+          transform={`translate(0, ${CUP_Y_OFFSET})`}
         />
 
-        {/* 물 wave (클리핑 적용) */}
+        {/* 물 wave */}
         <G clipPath={`url(#${clipId})`}>
-          <AnimatedPath animatedProps={animatedWaterProps} />
+          <AnimatedPath
+            animatedProps={animatedWaterProps}
+            fill={waterColor}
+            transform={`translate(0, ${CUP_Y_OFFSET})`}
+          />
         </G>
 
         {/* 컵 테두리 */}
@@ -127,10 +194,10 @@ export function AnimatedWaterCup({ percent, current, goal }: Props) {
           fill="none"
           stroke={colors.backgroundElement}
           strokeWidth={3}
+          transform={`translate(0, ${CUP_Y_OFFSET})`}
         />
       </Svg>
 
-      {/* 수치 표시 */}
       <Text style={[styles.amount, { color: colors.text }]}>
         {current}<Text style={[styles.unit, { color: colors.textSecondary }]}>ml</Text>
       </Text>
@@ -149,7 +216,6 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 48,
     fontWeight: '700',
-    marginTop: Spacing.two,
   },
   unit: {
     fontSize: 20,
