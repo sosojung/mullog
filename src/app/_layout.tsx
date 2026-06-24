@@ -6,6 +6,7 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import { useWaterStore } from '@/store/waterStore';
 import { useOnboardingStore } from '@/store/onboardingStore';
+import { useNotificationStore } from '@/store/notificationStore';
 import OnboardingScreen from './onboarding';
 import { TutorialOverlay } from '@/components/TutorialOverlay';
 
@@ -13,11 +14,12 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const loadWater = useWaterStore(s => s.loadFromStorage);
   const { isOnboarded, isLoaded, loadFromStorage, completeOnboarding } = useOnboardingStore();
+  const loadNotifications = useNotificationStore(s => s.loadFromStorage);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
-    Promise.all([loadFromStorage(), loadWater()]);
+    Promise.all([loadFromStorage(), loadWater(), loadNotifications()]);
   }, []);
 
   if (!isLoaded) {

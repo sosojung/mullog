@@ -24,6 +24,9 @@ export default function AppTabs() {
           <TabTrigger name="statistics" href="/statistics" asChild>
             <TabButton>통계</TabButton>
           </TabTrigger>
+          <TabTrigger name="settings" href={'/settings' as never} asChild>
+            <TabButton>설정</TabButton>
+          </TabTrigger>
         </CustomTabList>
       </TabList>
     </Tabs>
