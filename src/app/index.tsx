@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/use-theme';
 import { Spacing, BottomTabInset } from '../constants/theme';
 import { useWaterStore } from '../store/waterStore';
-import { getTodayTotal, getProgressPercent, getStreak } from '../utils/calculateProgress';
+import { getTodayTotal, getProgressPercent, getStreak, formatMl } from '../utils/calculateProgress';
 import { WaterButton } from '../components/WaterButton';
 import { AnimatedWaterCup } from '../components/AnimatedWaterCup';
 
@@ -30,7 +30,7 @@ function getTodayLabel(): string {
 
 export default function HomeScreen() {
   const colors = useTheme();
-  const { records, dailyGoal, addWater, setGoal, deleteRecord } = useWaterStore();
+  const { records, dailyGoal, buttonAmounts, addWater, setGoal, deleteRecord } = useWaterStore();
 
   const [customModalVisible, setCustomModalVisible] = useState(false);
   const [goalModalVisible, setGoalModalVisible] = useState(false);
@@ -91,7 +91,7 @@ export default function HomeScreen() {
             )}
             <Pressable onPress={() => { setGoalInput(String(dailyGoal)); setGoalModalVisible(true); }}>
               <Text style={[styles.goalChip, { color: colors.textSecondary, backgroundColor: colors.backgroundElement }]}>
-                목표 {dailyGoal}ml
+                목표 {formatMl(dailyGoal)}ml
               </Text>
             </Pressable>
           </View>
@@ -104,8 +104,8 @@ export default function HomeScreen() {
 
         {/* 버튼 */}
         <View style={styles.buttons}>
-          <WaterButton label="+200ml" emoji="💧" variant="primary" onPress={() => addWater(200)} />
-          <WaterButton label="+300ml" emoji="💧" variant="primary" onPress={() => addWater(300)} />
+          <WaterButton label={`+${formatMl(buttonAmounts[0])}ml`} emoji="💧" variant="primary" onPress={() => addWater(buttonAmounts[0])} />
+          <WaterButton label={`+${formatMl(buttonAmounts[1])}ml`} emoji="💧" variant="primary" onPress={() => addWater(buttonAmounts[1])} />
           <WaterButton label="직접 입력" emoji="✏️" onPress={() => setCustomModalVisible(true)} />
         </View>
 
@@ -115,7 +115,7 @@ export default function HomeScreen() {
             <Text style={[styles.historyTitle, { color: colors.textSecondary }]}>오늘 기록</Text>
             {todayRecords.map(r => (
               <View key={r.id} style={[styles.historyItem, { backgroundColor: colors.backgroundElement }]}>
-                <Text style={[styles.historyAmount, { color: colors.text }]}>{r.amount}ml</Text>
+                <Text style={[styles.historyAmount, { color: colors.text }]}>{formatMl(r.amount)}ml</Text>
                 <View style={styles.historyRight}>
                   <Text style={[styles.historyTime, { color: colors.textSecondary }]}>
                     {new Date(r.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}

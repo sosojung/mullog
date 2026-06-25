@@ -4,7 +4,7 @@ import { BarChart } from 'react-native-chart-kit';
 import { useTheme } from '../hooks/use-theme';
 import { Spacing, BottomTabInset } from '../constants/theme';
 import { useWaterStore } from '../store/waterStore';
-import { getTodayTotal, getLast7Days } from '../utils/calculateProgress';
+import { getTodayTotal, getLast7Days, formatMl } from '../utils/calculateProgress';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -38,17 +38,17 @@ export default function StatisticsScreen() {
         <View style={styles.cards}>
           <View style={[styles.card, { backgroundColor: colors.backgroundElement }]}>
             <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>오늘 섭취량</Text>
-            <Text style={[styles.cardValue, { color: colors.text }]}>{todayTotal}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>ml</Text></Text>
+            <Text style={[styles.cardValue, { color: colors.text }]}>{formatMl(todayTotal)}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>ml</Text></Text>
           </View>
           <View style={[styles.card, { backgroundColor: colors.backgroundElement }]}>
             <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>7일 평균</Text>
-            <Text style={[styles.cardValue, { color: colors.text }]}>{average}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>ml</Text></Text>
+            <Text style={[styles.cardValue, { color: colors.text }]}>{formatMl(average)}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>ml</Text></Text>
           </View>
         </View>
         <View style={styles.cards}>
           <View style={[styles.card, { backgroundColor: colors.backgroundElement }]}>
             <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>최고 섭취량</Text>
-            <Text style={[styles.cardValue, { color: colors.text }]}>{maxDay}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>ml</Text></Text>
+            <Text style={[styles.cardValue, { color: colors.text }]}>{formatMl(maxDay)}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>ml</Text></Text>
           </View>
           <View style={[styles.card, { backgroundColor: colors.backgroundElement }]}>
             <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>목표 달성일</Text>
@@ -82,7 +82,7 @@ export default function StatisticsScreen() {
             style={{ borderRadius: 8 }}
           />
           {/* 목표선 표시 텍스트 */}
-          <Text style={[styles.goalNote, { color: colors.textSecondary }]}>목표: {dailyGoal}ml</Text>
+          <Text style={[styles.goalNote, { color: colors.textSecondary }]}>목표: {formatMl(dailyGoal)}ml</Text>
         </View>
 
         {/* 7일 상세 */}

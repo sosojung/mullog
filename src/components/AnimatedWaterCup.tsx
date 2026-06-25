@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
+import { formatMl } from '../utils/calculateProgress';
 import Svg, { Path, Defs, ClipPath, G, Circle } from 'react-native-svg';
 import Animated, {
   useSharedValue,
@@ -199,10 +200,10 @@ export function AnimatedWaterCup({ percent, current, goal }: Props) {
       </Svg>
 
       <Text style={[styles.amount, { color: colors.text }]}>
-        {current}<Text style={[styles.unit, { color: colors.textSecondary }]}>ml</Text>
+        {formatMl(current)}<Text style={[styles.unit, { color: colors.textSecondary }]}>ml</Text>
       </Text>
       <Text style={[styles.goal, { color: colors.textSecondary }]}>
-        목표 {goal}ml · {percent}%
+        목표 {formatMl(goal)}ml · {percent}%
       </Text>
     </View>
   );

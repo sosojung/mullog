@@ -1,5 +1,9 @@
 import { WaterRecord } from '../types/water';
 
+export function formatMl(value: number): string {
+  return value.toLocaleString('ko-KR');
+}
+
 function toDateString(timestamp: number): string {
   const d = new Date(timestamp);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
