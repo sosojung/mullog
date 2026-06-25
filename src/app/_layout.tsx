@@ -32,12 +32,12 @@ export default function TabLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <View style={StyleSheet.absoluteFillObject}>
+      <View style={StyleSheet.absoluteFill}>
         <AppTabs />
 
         {/* 온보딩: 홈 화면 위에 풀스크린으로 덮기 */}
         {!isOnboarded && showOnboarding && (
-          <View style={StyleSheet.absoluteFillObject}>
+          <View style={StyleSheet.absoluteFill}>
             <OnboardingScreen
               onStart={async () => {
                 setShowOnboarding(false);

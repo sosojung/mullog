@@ -1,25 +1,29 @@
 import { create } from 'zustand';
 import { WaterRecord } from '../types/water';
-import { loadWaterData, saveWaterData } from '../services/storageService';
+import { loadWaterData, saveWaterData, loadButtonAmounts, saveButtonAmounts } from '../services/storageService';
 
 type WaterStore = {
   records: WaterRecord[];
   dailyGoal: number;
+  buttonAmounts: [number, number];
   isLoaded: boolean;
   loadFromStorage: () => Promise<void>;
   addWater: (amount: number) => Promise<void>;
   setGoal: (goal: number) => Promise<void>;
+  setButtonAmounts: (amounts: [number, number]) => Promise<void>;
   deleteRecord: (id: string) => Promise<void>;
 };
 
 export const useWaterStore = create<WaterStore>((set, get) => ({
   records: [],
   dailyGoal: 2000,
+  buttonAmounts: [200, 300],
   isLoaded: false,
 
   loadFromStorage: async () => {
     const data = await loadWaterData();
-    set({ records: data.records, dailyGoal: data.dailyGoal, isLoaded: true });
+    const buttonAmounts = await loadButtonAmounts();
+    set({ records: data.records, dailyGoal: data.dailyGoal, buttonAmounts, isLoaded: true });
   },
 
   addWater: async (amount) => {
@@ -36,6 +40,11 @@ export const useWaterStore = create<WaterStore>((set, get) => ({
   setGoal: async (goal) => {
     set({ dailyGoal: goal });
     await saveWaterData({ records: get().records, dailyGoal: goal });
+  },
+
+  setButtonAmounts: async (amounts) => {
+    set({ buttonAmounts: amounts });
+    await saveButtonAmounts(amounts);
   },
 
   deleteRecord: async (id) => {

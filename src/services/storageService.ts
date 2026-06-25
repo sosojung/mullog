@@ -26,6 +26,23 @@ export async function saveWaterData(state: WaterState): Promise<void> {
   }
 }
 
+const BUTTON_AMOUNTS_KEY = '@mullog/buttonAmounts';
+
+export async function loadButtonAmounts(): Promise<[number, number]> {
+  try {
+    const json = await AsyncStorage.getItem(BUTTON_AMOUNTS_KEY);
+    return json ? JSON.parse(json) : [200, 300];
+  } catch {
+    return [200, 300];
+  }
+}
+
+export async function saveButtonAmounts(amounts: [number, number]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(BUTTON_AMOUNTS_KEY, JSON.stringify(amounts));
+  } catch {}
+}
+
 const ONBOARDING_KEY = '@mullog/onboarding';
 
 export async function loadOnboardingData(): Promise<boolean> {
