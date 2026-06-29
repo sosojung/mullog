@@ -20,7 +20,7 @@ export default function TabLayout() {
 
   useEffect(() => {
     Promise.all([loadFromStorage(), loadWater(), loadNotifications()]);
-  }, []);
+  }, [loadFromStorage, loadWater, loadNotifications]);
 
   if (!isLoaded) {
     return (
