@@ -25,19 +25,24 @@ export function getProgressPercent(total: number, goal: number): number {
   return Math.min(100, Math.round((total / goal) * 100));
 }
 
+export function isSameDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear()
+    && a.getMonth() === b.getMonth()
+    && a.getDate() === b.getDate();
+}
+
 export function getStreak(records: WaterRecord[], dailyGoal: number): number {
   if (dailyGoal <= 0) return 0;
   let streak = 0;
-  const d = new Date();
-  // 오늘 달성 여부 확인 후 역순으로 카운트
-  while (true) {
+  for (let i = 0; i < 365; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
     const dateStr = toDateString(d.getTime());
     const total = records
       .filter(r => toDateString(r.timestamp) === dateStr)
       .reduce((sum, r) => sum + r.amount, 0);
     if (total < dailyGoal) break;
     streak++;
-    d.setDate(d.getDate() - 1);
   }
   return streak;
 }
