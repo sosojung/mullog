@@ -14,6 +14,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../hooks/use-theme';
 import { Spacing } from '../constants/theme';
+import { AppColors } from '../constants/colors';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -53,8 +54,8 @@ export function AnimatedWaterCup({ percent, current, goal }: Props) {
   const prevGoalMet = useRef(false);
 
   // 색상: React state로 관리 (웹/네이티브 모두 동작)
-  const [waterColor, setWaterColor] = useState('#007AFF');
-  const [bgColor, setBgColor] = useState('rgba(0,122,255,0.12)');
+  const [waterColor, setWaterColor] = useState(AppColors.primary);
+  const [bgColor, setBgColor] = useState(AppColors.waterBg);
 
   // 파티클 sharedValues
   const particleY = Array.from({ length: PARTICLE_COUNT }, () => useSharedValue(0));
@@ -97,11 +98,11 @@ export function AnimatedWaterCup({ percent, current, goal }: Props) {
 
     // 색상 전환
     if (goalMet) {
-      setWaterColor('#34C759');
-      setBgColor('rgba(52,199,89,0.12)');
+      setWaterColor(AppColors.success);
+      setBgColor(AppColors.successBg);
     } else {
-      setWaterColor('#007AFF');
-      setBgColor('rgba(0,122,255,0.12)');
+      setWaterColor(AppColors.primary);
+      setBgColor(AppColors.waterBg);
     }
 
     // 처음 달성하는 순간에만 이펙트 실행

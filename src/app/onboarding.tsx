@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/use-theme';
 import { Spacing } from '../constants/theme';
+import { AppColors, GOAL_PRESETS } from '../constants/colors';
 import { useWaterStore } from '../store/waterStore';
 import { useOnboardingStore } from '../store/onboardingStore';
 
@@ -62,13 +63,13 @@ export default function OnboardingScreen({ onStart }: Props) {
             <Text style={[styles.inputUnit, { color: colors.textSecondary }]}>ml</Text>
           </View>
           <View style={styles.presets}>
-            {[1500, 2000, 2500].map(v => (
+            {GOAL_PRESETS.map(v => (
               <Pressable
                 key={v}
                 style={[
                   styles.presetBtn,
                   {
-                    backgroundColor: goalInput === String(v) ? '#007AFF' : colors.backgroundSelected,
+                    backgroundColor: goalInput === String(v) ? AppColors.primary : colors.backgroundSelected,
                   },
                 ]}
                 onPress={() => setGoalInput(String(v))}
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   startBtn: {
-    backgroundColor: '#007AFF',
+    backgroundColor: AppColors.primary,
     borderRadius: 14,
     paddingVertical: Spacing.three,
     alignItems: 'center',
