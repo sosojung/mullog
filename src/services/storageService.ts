@@ -40,7 +40,30 @@ export async function loadButtonAmounts(): Promise<[number, number]> {
 export async function saveButtonAmounts(amounts: [number, number]): Promise<void> {
   try {
     await AsyncStorage.setItem(BUTTON_AMOUNTS_KEY, JSON.stringify(amounts));
-  } catch {}
+  } catch (e) {
+    console.error('버튼 물량 저장 실패:', e);
+  }
+}
+
+const NOTIFICATION_KEY = '@mullog/notifications';
+
+type NotificationSettings = { enabled: boolean; intervalHours: number };
+
+export async function loadNotificationData(): Promise<NotificationSettings | null> {
+  try {
+    const raw = await AsyncStorage.getItem(NOTIFICATION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveNotificationData(settings: NotificationSettings): Promise<void> {
+  try {
+    await AsyncStorage.setItem(NOTIFICATION_KEY, JSON.stringify(settings));
+  } catch (e) {
+    console.error('알림 설정 저장 실패:', e);
+  }
 }
 
 const ONBOARDING_KEY = '@mullog/onboarding';

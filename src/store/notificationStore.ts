@@ -1,8 +1,6 @@
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadNotificationData, saveNotificationData } from '../services/storageService';
 import { scheduleWaterReminders, cancelAllReminders } from '../services/notificationService';
-
-const STORAGE_KEY = '@mullog/notifications';
 
 type NotificationStore = {
   enabled: boolean;
@@ -20,12 +18,11 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
 
   loadFromStorage: async () => {
     try {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const { enabled, intervalHours } = JSON.parse(raw);
-        set({ enabled, intervalHours, isLoaded: true });
-        if (enabled) {
-          await scheduleWaterReminders(intervalHours);
+      const data = await loadNotificationData();
+      if (data) {
+        set({ enabled: data.enabled, intervalHours: data.intervalHours, isLoaded: true });
+        if (data.enabled) {
+          await scheduleWaterReminders(data.intervalHours);
         }
       } else {
         set({ isLoaded: true });
@@ -39,7 +36,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     const { enabled, intervalHours } = get();
     const next = !enabled;
     set({ enabled: next });
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ enabled: next, intervalHours }));
+    await saveNotificationData({ enabled: next, intervalHours });
     if (next) {
       await scheduleWaterReminders(intervalHours);
     } else {
@@ -50,7 +47,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   setIntervalHours: async (hours) => {
     set({ intervalHours: hours });
     const { enabled } = get();
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ enabled, intervalHours: hours }));
+    await saveNotificationData({ enabled, intervalHours: hours });
     if (enabled) {
       await scheduleWaterReminders(hours);
     }
