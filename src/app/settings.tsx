@@ -7,6 +7,7 @@ import { useNotificationStore } from '../store/notificationStore';
 import { useWaterStore } from '../store/waterStore';
 import { requestPermission } from '../services/notificationService';
 import { formatMl } from '../utils/calculateProgress';
+import { AppColors } from '../constants/colors';
 
 const INTERVAL_OPTIONS = [1, 2, 3];
 
@@ -72,7 +73,7 @@ export default function SettingsScreen() {
                   {formatMl(buttonAmounts[i])}
                   <Text style={[styles.amountCardUnit, { color: colors.textSecondary }]}>ml</Text>
                 </Text>
-                <Text style={[styles.amountCardEdit, { color: '#007AFF' }]}>수정 ›</Text>
+                <Text style={[styles.amountCardEdit, { color: AppColors.primary }]}>수정 ›</Text>
               </Pressable>
             ))}
           </View>
@@ -94,7 +95,7 @@ export default function SettingsScreen() {
             <Switch
               value={enabled}
               onValueChange={handleToggle}
-              trackColor={{ true: '#007AFF' }}
+              trackColor={{ true: AppColors.primary }}
             />
           </View>
 
@@ -107,7 +108,7 @@ export default function SettingsScreen() {
                     key={h}
                     style={[
                       styles.intervalBtn,
-                      { backgroundColor: intervalHours === h ? '#007AFF' : colors.backgroundSelected },
+                      { backgroundColor: intervalHours === h ? AppColors.primary : colors.backgroundSelected },
                     ]}
                     onPress={() => setIntervalHours(h)}
                   >
@@ -147,7 +148,7 @@ export default function SettingsScreen() {
               {[100, 150, 200, 250, 300, 350, 400, 500].map(v => (
                 <Pressable
                   key={v}
-                  style={[styles.presetBtn, { backgroundColor: editInput === String(v) ? '#007AFF' : colors.backgroundSelected }]}
+                  style={[styles.presetBtn, { backgroundColor: editInput === String(v) ? AppColors.primary : colors.backgroundSelected }]}
                   onPress={() => setEditInput(String(v))}
                 >
                   <Text style={{ color: editInput === String(v) ? '#fff' : colors.textSecondary, fontSize: 13 }}>
@@ -160,7 +161,7 @@ export default function SettingsScreen() {
               <Pressable style={[styles.modalBtn, { backgroundColor: colors.backgroundSelected }]} onPress={() => setEditingIndex(null)}>
                 <Text style={{ color: colors.text }}>취소</Text>
               </Pressable>
-              <Pressable style={[styles.modalBtn, { backgroundColor: '#007AFF' }]} onPress={handleSaveAmount}>
+              <Pressable style={[styles.modalBtn, { backgroundColor: AppColors.primary }]} onPress={handleSaveAmount}>
                 <Text style={{ color: '#fff', fontWeight: '600' }}>저장</Text>
               </Pressable>
             </View>
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
   intervalBtn: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, borderRadius: 10 },
   intervalBtnText: { fontSize: 14, fontWeight: '600' },
   intervalNote: { fontSize: 12, lineHeight: 16 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: AppColors.overlay, justifyContent: 'center', alignItems: 'center' },
   modalBox: { width: '85%', borderRadius: 16, padding: Spacing.four, gap: Spacing.three },
   modalTitle: { fontSize: 18, fontWeight: '700' },
   input: { borderWidth: 1, borderRadius: 10, padding: Spacing.two, fontSize: 20, fontWeight: '700', textAlign: 'center' },

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useTheme } from '../hooks/use-theme';
 import { Spacing, BottomTabInset } from '../constants/theme';
 import { useWaterStore } from '../store/waterStore';
 import { getTodayTotal, getProgressPercent, getStreak, formatMl } from '../utils/calculateProgress';
+import { AppColors, GOAL_PRESETS } from '../constants/colors';
 import { WaterButton } from '../components/WaterButton';
 import { AnimatedWaterCup } from '../components/AnimatedWaterCup';
 
@@ -41,9 +42,12 @@ export default function HomeScreen() {
   const percent = getProgressPercent(todayTotal, dailyGoal);
   const streak = getStreak(records, dailyGoal);
 
-  const todayRecords = [...records]
-    .filter(r => new Date(r.timestamp).toDateString() === new Date().toDateString())
-    .reverse();
+  const todayRecords = useMemo(() =>
+    [...records]
+      .filter(r => new Date(r.timestamp).toDateString() === new Date().toDateString())
+      .reverse(),
+    [records]
+  );
 
   async function handleCustomAdd() {
     const amount = parseInt(customInput, 10);
@@ -153,7 +157,7 @@ export default function HomeScreen() {
               <Pressable style={[styles.modalBtn, { backgroundColor: colors.backgroundSelected }]} onPress={() => { setCustomInput(''); setCustomModalVisible(false); }}>
                 <Text style={{ color: colors.text }}>취소</Text>
               </Pressable>
-              <Pressable style={[styles.modalBtn, { backgroundColor: '#007AFF' }]} onPress={handleCustomAdd}>
+              <Pressable style={[styles.modalBtn, { backgroundColor: AppColors.primary }]} onPress={handleCustomAdd}>
                 <Text style={{ color: '#fff', fontWeight: '600' }}>추가</Text>
               </Pressable>
             </View>
@@ -175,12 +179,12 @@ export default function HomeScreen() {
               autoFocus
             />
             <View style={styles.presets}>
-              {[1500, 2000, 2500].map(v => (
+              {GOAL_PRESETS.map(v => (
                 <Pressable
                   key={v}
                   style={[
                     styles.presetBtn,
-                    { backgroundColor: goalInput === String(v) ? '#007AFF' : colors.backgroundSelected },
+                    { backgroundColor: goalInput === String(v) ? AppColors.primary : colors.backgroundSelected },
                   ]}
                   onPress={() => setGoalInput(String(v))}
                 >
@@ -194,7 +198,7 @@ export default function HomeScreen() {
               <Pressable style={[styles.modalBtn, { backgroundColor: colors.backgroundSelected }]} onPress={() => { setGoalInput(''); setGoalModalVisible(false); }}>
                 <Text style={{ color: colors.text }}>취소</Text>
               </Pressable>
-              <Pressable style={[styles.modalBtn, { backgroundColor: '#007AFF' }]} onPress={handleSetGoal}>
+              <Pressable style={[styles.modalBtn, { backgroundColor: AppColors.primary }]} onPress={handleSetGoal}>
                 <Text style={{ color: '#fff', fontWeight: '600' }}>저장</Text>
               </Pressable>
             </View>
@@ -251,7 +255,7 @@ const styles = StyleSheet.create({
   deleteText: { fontSize: 18, fontWeight: '300', lineHeight: 20 },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: AppColors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },

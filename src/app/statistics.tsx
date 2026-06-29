@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BarChart } from 'react-native-chart-kit';
@@ -5,6 +6,7 @@ import { useTheme } from '../hooks/use-theme';
 import { Spacing, BottomTabInset } from '../constants/theme';
 import { useWaterStore } from '../store/waterStore';
 import { getTodayTotal, getLast7Days, formatMl } from '../utils/calculateProgress';
+import { AppColors } from '../constants/colors';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -12,22 +14,26 @@ export default function StatisticsScreen() {
   const colors = useTheme();
   const { records, dailyGoal } = useWaterStore();
 
-  const todayTotal = getTodayTotal(records);
-  const last7Days = getLast7Days(records);
+  const todayTotal = useMemo(() => getTodayTotal(records), [records]);
+  const last7Days = useMemo(() => getLast7Days(records), [records]);
 
-  const filledDays = last7Days.filter(d => d.total > 0).length;
-  const average = filledDays > 0
-    ? Math.round(last7Days.reduce((sum, d) => sum + d.total, 0) / filledDays)
-    : 0;
-  const maxDay = Math.max(...last7Days.map(d => d.total), 0);
-  const goalDays = last7Days.filter(d => d.total >= dailyGoal).length;
+  const { average, maxDay, goalDays } = useMemo(() => {
+    const filledDays = last7Days.filter(d => d.total > 0).length;
+    return {
+      average: filledDays > 0
+        ? Math.round(last7Days.reduce((sum, d) => sum + d.total, 0) / filledDays)
+        : 0,
+      maxDay: Math.max(...last7Days.map(d => d.total), 0),
+      goalDays: last7Days.filter(d => d.total >= dailyGoal).length,
+    };
+  }, [last7Days, dailyGoal]);
 
-  const chartLabels = last7Days.map(d => {
+  const chartLabels = useMemo(() => last7Days.map(d => {
     const [, month, day] = d.date.split('-');
     return `${parseInt(month)}/${parseInt(day)}`;
-  });
+  }), [last7Days]);
 
-  const chartData = last7Days.map(d => d.total);
+  const chartData = useMemo(() => last7Days.map(d => d.total), [last7Days]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -52,7 +58,7 @@ export default function StatisticsScreen() {
           </View>
           <View style={[styles.card, { backgroundColor: colors.backgroundElement }]}>
             <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>목표 달성일</Text>
-            <Text style={[styles.cardValue, { color: '#34C759' }]}>{goalDays}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>일 / 7일</Text></Text>
+            <Text style={[styles.cardValue, { color: AppColors.success }]}>{goalDays}<Text style={[styles.cardUnit, { color: colors.textSecondary }]}>일 / 7일</Text></Text>
           </View>
         </View>
 
@@ -94,7 +100,7 @@ export default function StatisticsScreen() {
               <View key={d.date} style={[styles.dayRow, { backgroundColor: colors.backgroundElement }]}>
                 <Text style={[styles.dayDate, { color: colors.textSecondary }]}>{d.date.slice(5)}</Text>
                 <View style={[styles.dayBar, { backgroundColor: colors.backgroundSelected }]}>
-                  <View style={[styles.dayBarFill, { width: `${pct}%`, backgroundColor: pct >= 100 ? '#34C759' : '#007AFF' }]} />
+                  <View style={[styles.dayBarFill, { width: `${pct}%`, backgroundColor: pct >= 100 ? AppColors.success : AppColors.primary }]} />
                 </View>
                 <Text style={[styles.dayAmount, { color: colors.text }]}>{d.total}ml</Text>
               </View>

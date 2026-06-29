@@ -1,8 +1,17 @@
+import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, Dimensions } from 'react-native';
 import { useTheme } from '../hooks/use-theme';
 import { Spacing } from '../constants/theme';
+import { AppColors } from '../constants/colors';
 
-const STEPS = [
+interface TutorialStep {
+  title: string;
+  description: string;
+  position: 'top' | 'bottom';
+  top: number;
+}
+
+const STEPS: TutorialStep[] = [
   {
     title: '오늘 섭취량',
     description: '오늘 마신 물의 총량이 여기에 표시돼요.',
@@ -53,7 +62,7 @@ export function TutorialOverlay({ visible, onComplete }: Props) {
 }
 
 function TutorialContent({ colors, onComplete }: { colors: ReturnType<typeof useTheme>; onComplete: () => void }) {
-  const [step, setStep] = require('react').useState(0);
+  const [step, setStep] = useState(0);
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
@@ -86,7 +95,7 @@ function TutorialContent({ colors, onComplete }: { colors: ReturnType<typeof use
             {step + 1} / {STEPS.length}
           </Text>
           <Pressable
-            style={[styles.nextBtn, { backgroundColor: '#007AFF' }]}
+            style={[styles.nextBtn, { backgroundColor: AppColors.primary }]}
             onPress={() => isLast ? onComplete() : setStep(step + 1)}
           >
             <Text style={styles.nextBtnText}>{isLast ? '완료' : '다음'}</Text>
@@ -105,14 +114,14 @@ function TutorialContent({ colors, onComplete }: { colors: ReturnType<typeof use
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: AppColors.overlayDark,
   },
   highlight: {
     position: 'absolute',
     left: Spacing.three,
     right: Spacing.three,
     height: 2,
-    backgroundColor: '#007AFF',
+    backgroundColor: AppColors.primary,
     opacity: 0.8,
   },
   tooltip: {
