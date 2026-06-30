@@ -68,7 +68,7 @@ function TutorialContent({ colors, onComplete }: { colors: ReturnType<typeof use
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
-  const TOOLTIP_HEIGHT = 160;
+  const TOOLTIP_HEIGHT = 136;
   const highlightY = current.fromBottom
     ? SCREEN_HEIGHT - current.top
     : current.top * SCREEN_HEIGHT;
