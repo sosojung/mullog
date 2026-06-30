@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Modal, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, Dimensions, Platform } from 'react-native';
 import { useTheme } from '../hooks/use-theme';
 import { Spacing } from '../constants/theme';
 import { AppColors } from '../constants/colors';
@@ -9,6 +9,7 @@ interface TutorialStep {
   description: string;
   position: 'top' | 'bottom';
   top: number;
+  fromBottom?: boolean; // true면 top을 하단에서의 offset(px)으로 해석
 }
 
 const STEPS: TutorialStep[] = [
@@ -40,7 +41,8 @@ const STEPS: TutorialStep[] = [
     title: '통계 탭',
     description: '아래 통계 탭에서 최근 7일 기록을 확인하세요.',
     position: 'top',
-    top: 0.935,
+    top: Platform.OS === 'ios' ? 90 : 60,
+    fromBottom: true,
   },
 ];
 
@@ -67,9 +69,12 @@ function TutorialContent({ colors, onComplete }: { colors: ReturnType<typeof use
   const isLast = step === STEPS.length - 1;
 
   const TOOLTIP_HEIGHT = 160;
+  const highlightY = current.fromBottom
+    ? SCREEN_HEIGHT - current.top
+    : current.top * SCREEN_HEIGHT;
   const raw = current.position === 'bottom'
-    ? current.top * SCREEN_HEIGHT + 24
-    : current.top * SCREEN_HEIGHT - TOOLTIP_HEIGHT - 24;
+    ? highlightY + 24
+    : highlightY - TOOLTIP_HEIGHT - 24;
   const tooltipTop = Math.max(8, Math.min(raw, SCREEN_HEIGHT - TOOLTIP_HEIGHT - 8));
 
   return (
@@ -78,7 +83,7 @@ function TutorialContent({ colors, onComplete }: { colors: ReturnType<typeof use
       <View
         style={[
           styles.highlight,
-          { top: current.top * SCREEN_HEIGHT - 10 },
+          { top: highlightY - 10 },
         ]}
       />
 
