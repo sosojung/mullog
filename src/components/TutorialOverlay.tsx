@@ -13,34 +13,34 @@ interface TutorialStep {
 
 const STEPS: TutorialStep[] = [
   {
-    title: '오늘 섭취량',
-    description: '오늘 마신 물의 총량이 여기에 표시돼요.',
+    title: '물컵 애니메이션',
+    description: '물을 마실수록 컵이 채워지고 목표를 달성하면 초록색으로 변해요.',
     position: 'bottom',
-    top: 0.22,
+    top: 0.30,
   },
   {
-    title: '달성률 바',
-    description: '목표 대비 달성률을 한눈에 확인하세요.',
+    title: '오늘 섭취량',
+    description: '오늘 마신 물의 총량과 목표 달성률이 여기에 표시돼요.',
     position: 'bottom',
-    top: 0.45,
+    top: 0.50,
   },
   {
     title: '빠른 기록 버튼',
-    description: '+200ml, +300ml 버튼을 누르면 바로 기록돼요.',
+    description: '+버튼을 누르면 설정된 물량이 바로 기록돼요.',
     position: 'top',
-    top: 0.62,
+    top: 0.64,
   },
   {
     title: '직접 입력',
     description: '다른 양은 직접 입력해서 기록할 수 있어요.',
     position: 'top',
-    top: 0.62,
+    top: 0.64,
   },
   {
     title: '통계 탭',
     description: '아래 통계 탭에서 최근 7일 기록을 확인하세요.',
     position: 'top',
-    top: 0.82,
+    top: 0.91,
   },
 ];
 
@@ -66,9 +66,11 @@ function TutorialContent({ colors, onComplete }: { colors: ReturnType<typeof use
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
-  const tooltipTop = current.position === 'bottom'
-    ? current.top * SCREEN_HEIGHT + 20
-    : current.top * SCREEN_HEIGHT - 130;
+  const TOOLTIP_HEIGHT = 160;
+  const raw = current.position === 'bottom'
+    ? current.top * SCREEN_HEIGHT + 24
+    : current.top * SCREEN_HEIGHT - TOOLTIP_HEIGHT - 24;
+  const tooltipTop = Math.max(8, Math.min(raw, SCREEN_HEIGHT - TOOLTIP_HEIGHT - 8));
 
   return (
     <View style={styles.overlay}>

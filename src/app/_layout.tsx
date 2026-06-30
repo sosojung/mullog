@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, ThemeProvider, useRouter } from 'expo-router';
 import { useColorScheme, View, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 
@@ -12,6 +12,7 @@ import { TutorialOverlay } from '@/components/TutorialOverlay';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
   const loadWater = useWaterStore(s => s.loadFromStorage);
   const { isOnboarded, isLoaded, loadFromStorage, completeOnboarding } = useOnboardingStore();
   const loadNotifications = useNotificationStore(s => s.loadFromStorage);
@@ -41,6 +42,7 @@ export default function TabLayout() {
             <OnboardingScreen
               onStart={async () => {
                 setShowOnboarding(false);
+                router.replace('/');
                 setShowTutorial(true);
               }}
             />
