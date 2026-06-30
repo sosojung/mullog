@@ -28,14 +28,14 @@ const STEPS: TutorialStep[] = [
   {
     title: '빠른 기록 버튼',
     description: '+버튼을 누르면 설정된 물량이 바로 기록돼요.',
-    position: 'top',
-    top: 0.64,
+    position: 'bottom',
+    top: 0.60,
   },
   {
     title: '직접 입력',
     description: '다른 양은 직접 입력해서 기록할 수 있어요.',
-    position: 'top',
-    top: 0.64,
+    position: 'bottom',
+    top: 0.60,
   },
   {
     title: '통계 탭',
