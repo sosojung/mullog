@@ -40,7 +40,7 @@ const STEPS: TutorialStep[] = [
     title: '통계 탭',
     description: '아래 통계 탭에서 최근 7일 기록을 확인하세요.',
     position: 'top',
-    top: 0.91,
+    top: 0.935,
   },
 ];
 
