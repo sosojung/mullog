@@ -16,8 +16,12 @@ export default function TabLayout() {
   const loadWater = useWaterStore(s => s.loadFromStorage);
   const { isOnboarded, isLoaded, loadFromStorage, completeOnboarding } = useOnboardingStore();
   const loadNotifications = useNotificationStore(s => s.loadFromStorage);
-  const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(!isOnboarded);
   const [showTutorial, setShowTutorial] = useState(false);
+
+  useEffect(() => {
+    if (!isOnboarded && isLoaded) setShowOnboarding(true);
+  }, [isOnboarded, isLoaded]);
 
   useEffect(() => {
     Promise.all([loadFromStorage(), loadWater(), loadNotifications()]);

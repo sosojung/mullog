@@ -17,13 +17,13 @@ const STEPS: TutorialStep[] = [
     title: '물컵 애니메이션',
     description: '물을 마실수록 컵이 채워지고 목표를 달성하면 초록색으로 변해요.',
     position: 'bottom',
-    top: 0.30,
+    top: 0.48,
   },
   {
     title: '오늘 섭취량',
     description: '오늘 마신 물의 총량과 목표 달성률이 여기에 표시돼요.',
     position: 'bottom',
-    top: 0.50,
+    top: 0.57,
   },
   {
     title: '빠른 기록 버튼',

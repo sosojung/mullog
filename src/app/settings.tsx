@@ -5,6 +5,7 @@ import { useTheme } from '../hooks/use-theme';
 import { Spacing, BottomTabInset } from '../constants/theme';
 import { useNotificationStore } from '../store/notificationStore';
 import { useWaterStore } from '../store/waterStore';
+import { useOnboardingStore } from '../store/onboardingStore';
 import { requestPermission } from '../services/notificationService';
 import { formatMl } from '../utils/calculateProgress';
 import { AppColors } from '../constants/colors';
@@ -15,6 +16,7 @@ export default function SettingsScreen() {
   const colors = useTheme();
   const { enabled, intervalHours, toggleEnabled, setIntervalHours } = useNotificationStore();
   const { buttonAmounts, setButtonAmounts } = useWaterStore();
+  const { resetOnboarding } = useOnboardingStore();
 
   const [editingIndex, setEditingIndex] = useState<0 | 1 | null>(null);
   const [editInput, setEditInput] = useState('');
@@ -125,6 +127,23 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        <View style={{ height: Spacing.three }} />
+
+        {/* 온보딩 초기화 */}
+        <View style={[styles.section, { backgroundColor: colors.backgroundElement }]}>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>앱 정보</Text>
+          <Pressable
+            style={[styles.row, styles.resetBtn, { backgroundColor: colors.backgroundSelected }]}
+            onPress={() => Alert.alert('온보딩 초기화', '앱을 다시 시작하면 온보딩이 표시됩니다.', [
+              { text: '취소', style: 'cancel' },
+              { text: '초기화', style: 'destructive', onPress: resetOnboarding },
+            ])}
+          >
+            <Text style={[styles.rowLabel, { color: colors.text }]}>온보딩 다시 보기</Text>
+            <Text style={[styles.rowDesc, { color: colors.textSecondary }]}>›</Text>
+          </Pressable>
+        </View>
+
         <View style={{ height: BottomTabInset }} />
       </ScrollView>
 
@@ -209,4 +228,5 @@ const styles = StyleSheet.create({
   presetBtn: { paddingHorizontal: Spacing.two, paddingVertical: Spacing.one, borderRadius: 8 },
   modalButtons: { flexDirection: 'row', gap: Spacing.two },
   modalBtn: { flex: 1, alignItems: 'center', paddingVertical: Spacing.two, borderRadius: 10 },
+  resetBtn: { borderRadius: 12, padding: Spacing.two },
 });

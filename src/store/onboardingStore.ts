@@ -6,6 +6,7 @@ type OnboardingStore = {
   isLoaded: boolean;
   loadFromStorage: () => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  resetOnboarding: () => Promise<void>;
 };
 
 export const useOnboardingStore = create<OnboardingStore>((set) => ({
@@ -20,5 +21,10 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   completeOnboarding: async () => {
     await saveOnboardingData(true);
     set({ isOnboarded: true });
+  },
+
+  resetOnboarding: async () => {
+    await saveOnboardingData(false);
+    set({ isOnboarded: false });
   },
 }));
